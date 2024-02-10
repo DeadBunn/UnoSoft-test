@@ -1,26 +1,19 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        LinkedList<ArrayList<Long>> data = DataReader.readData("lng.txt");
 
-        LinkedList<LinkedList<ArrayList<Long>>> result = GroupDivider.divide(data);
+        long start = System.currentTimeMillis();
 
-        int n = 1;
+        List<Long[]> data = DataReader.readData(args[0]);
+        List<List<Long[]>> groups = GroupDivider.divide(data);
+        DataWriter.writeData(groups);
 
-        for (LinkedList<ArrayList<Long>> group : result){
-            System.out.println("Группа " + n++);
-            for (ArrayList<Long> lines : group){
-                for (Long number : lines){
-                    System.out.print(number + " ");
-                }
-                System.out.println();
-            }
-        }
+        long finish = System.currentTimeMillis();
+
+        System.out.println((float) (finish - start) / 1000);
     }
 
 }

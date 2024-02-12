@@ -97,37 +97,23 @@ public class GroupDivider {
         List<Map<Float, Group>> result = new ArrayList<>();
 
         for (int i = 0; i < maxLength; i++) {
-            int finalI = i;
-            Float[] currentElements = data.stream()
-                    .map(it -> Arrays.stream(it)
-                            .skip(finalI)
-                            .findFirst()
-                            .orElse(0F)
-                    )
-                    .toArray(Float[]::new);
-            Set<Float> notHaveCopies = new HashSet<>();
-            Set<Float> hasCopies = new HashSet<>();
-            for (Float l : currentElements) {
-                if (l != 0 && !notHaveCopies.add(l)) {
-                    hasCopies.add(l);
+
+
+            Map<Float, List<Float[]>> resultMap = new HashMap<>();
+
+            data.forEach(floatArray -> {
+                for (Float key : floatArray) {
+                    resultMap.putIfAbsent(key, new ArrayList<>());
+                    resultMap.get(key).add(floatArray);
                 }
-            }
+            });
 
-            Map<Float, Group> mapWithMatches = data.stream()
-                    .filter(s -> Arrays.stream(s)
-                            .skip(finalI)
-                            .limit(1)
-                            .anyMatch(hasCopies::contains))
-                    .collect(Collectors.groupingBy(
-                            s -> Arrays.stream(s)
-                                    .skip(finalI)
-                                    .limit(1)
-                                    .findFirst().orElse(0F),
-                            Collectors.collectingAndThen(Collectors.toList(), Group::new)
-                    ));
+            Map<Float, Group> transformedMap = resultMap.entrySet().stream()
+                    .filter(it -> it.getValue().size() >= 2)
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Group(entry.getValue())));
 
-            if (!mapWithMatches.isEmpty()) {
-                result.add(mapWithMatches);
+            if (!transformedMap.isEmpty()) {
+                result.add(transformedMap);
             }
         }
         return result;

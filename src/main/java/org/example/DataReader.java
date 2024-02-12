@@ -18,7 +18,7 @@ public class DataReader {
         try (Stream<String> rows = Files.lines(Paths.get(filePath))) {
             data = rows
                     .distinct()
-                    //.filter(it -> it.matches("(\"[0-9]*\")(;\"[0-9.]*\")*"))
+                    .filter(it -> it.matches("((\"[0-9.]*\")?)(;(\"[0-9.]*\")?)*"))
                     .map(it -> Arrays.stream(it.split(";"))
                             .map(number -> number.equals("")
                                     ? 0L

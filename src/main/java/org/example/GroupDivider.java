@@ -14,7 +14,7 @@ public class GroupDivider {
             this.group = group;
         }
 
-        public static List<List<Group>> getConnectedGroups(Set<Group> groupsList) {
+        public static List<List<Group>> getConnectedGroups(List<Group> groupsList) {
             List<List<Group>> connectedGroups = new ArrayList<>();
             Set<Group> visited = new HashSet<>();
 
@@ -61,17 +61,16 @@ public class GroupDivider {
                         if (groupToConnect != null) {
                             groupToConnect.linkedGroups.add(currentGroup.getValue());
                             currentGroup.getValue().linkedGroups.add(groupToConnect);
-                            break;
                         }
                     }
                 }
             }
         }
 
-        Set<Group> groupsList = groupsByColumns
+        List<Group> groupsList = groupsByColumns
                 .stream()
                 .flatMap(it -> it.values().stream())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
 
         return Group.getConnectedGroups(groupsList)
@@ -79,9 +78,10 @@ public class GroupDivider {
                 .map(it -> it.stream()
                         .flatMap(g -> g.group.stream())
                         .distinct()
-                        .collect(Collectors.toList()))
+                        .toList()
+                )
                 .sorted((list1, list2) -> Integer.compare(list2.size(), list1.size()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static int findMaxLength(List<Float[]> data) {
@@ -98,13 +98,14 @@ public class GroupDivider {
 
         for (int i = 0; i < maxLength; i++) {
 
+            int finalInt = i;
 
             Map<Float, List<Float[]>> resultMap = new HashMap<>();
 
-            data.forEach(floatArray -> {
-                for (Float key : floatArray) {
-                    resultMap.putIfAbsent(key, new ArrayList<>());
-                    resultMap.get(key).add(floatArray);
+            data.forEach(FloatArray -> {
+                if (FloatArray.length > finalInt && FloatArray[finalInt] != 0) {
+                    resultMap.putIfAbsent(FloatArray[finalInt], new ArrayList<>());
+                    resultMap.get(FloatArray[finalInt]).add(FloatArray);
                 }
             });
 

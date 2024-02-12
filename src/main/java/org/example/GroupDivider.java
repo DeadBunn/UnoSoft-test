@@ -5,34 +5,83 @@ import java.util.stream.Collectors;
 
 public class GroupDivider {
 
+    private static class Group {
+        private final List<Float[]> group;
+
+        private final List<Group> linkedGroups = new ArrayList<>();
+
+        public Group(List<Float[]> group) {
+            this.group = group;
+        }
+
+        public static List<List<Group>> getConnectedGroups(Set<Group> groupsList) {
+            List<List<Group>> connectedGroups = new ArrayList<>();
+            Set<Group> visited = new HashSet<>();
+
+            for (Group group : groupsList) {
+                if (!visited.contains(group)) {
+                    List<Group> connected = new ArrayList<>();
+                    dfs(group, visited, connected);
+                    connectedGroups.add(connected);
+                }
+            }
+
+            return connectedGroups;
+        }
+
+        private static void dfs(Group group, Set<Group> visited, List<Group> connected) {
+            visited.add(group);
+            connected.add(group);
+
+            for (Group linkedGroup : group.linkedGroups) {
+                if (!visited.contains(linkedGroup)) {
+                    dfs(linkedGroup, visited, connected);
+                }
+            }
+        }
+    }
+
     public static List<List<Float[]>> divide(List<Float[]> data) {
 
-        List<Map<Float, List<Float[]>>> groupsByColumns = findGroupsByColumns(data);
-
-        GroupManager<Float> groupManager = new GroupManager<>(groupsByColumns);
+        List<Map<Float, Group>> groupsByColumns = findGroupsByColumns(data);
 
         for (int i = 0; i < groupsByColumns.size() - 1; i++) {
-            Map<Float, List<Float[]>> headGroups = groupsByColumns.get(i);
+            Map<Float, Group> headGroups = groupsByColumns.get(i);
             for (int j = i + 1; j < groupsByColumns.size(); j++) {
-                Map<Float, List<Float[]>> checkedGroups = groupsByColumns.get(j);
+                Map<Float, Group> checkedGroups = groupsByColumns.get(j);
 
-                for (Map.Entry<Float, List<Float[]>> currentGroup : headGroups.entrySet()) {
-                    for (Float[] line : currentGroup.getValue()) {
+                for (Map.Entry<Float, Group> currentGroup : headGroups.entrySet()) {
+                    for (Float[] line : currentGroup.getValue().group) {
 
                         if (!(line.length > j)) {
                             continue;
                         }
 
-                        List<Float[]> groupToConnect = checkedGroups.get(line[j]);
+                        Group groupToConnect = checkedGroups.get(line[j]);
                         if (groupToConnect != null) {
-                            groupManager.connectGroups(currentGroup.getValue(), i, currentGroup.getKey(), groupToConnect, j, line[j]);
+                            groupToConnect.linkedGroups.add(currentGroup.getValue());
+                            currentGroup.getValue().linkedGroups.add(groupToConnect);
                             break;
                         }
                     }
                 }
             }
         }
-        return groupManager.result();
+
+        Set<Group> groupsList = groupsByColumns
+                .stream()
+                .flatMap(it -> it.values().stream())
+                .collect(Collectors.toSet());
+
+
+        return Group.getConnectedGroups(groupsList)
+                .stream()
+                .map(it -> it.stream()
+                        .flatMap(g -> g.group.stream())
+                        .distinct()
+                        .collect(Collectors.toList()))
+                .sorted((list1, list2) -> Integer.compare(list2.size(), list1.size()))
+                .collect(Collectors.toList());
     }
 
     private static int findMaxLength(List<Float[]> data) {
@@ -42,14 +91,13 @@ public class GroupDivider {
                 .length;
     }
 
-    public static List<Map<Float, List<Float[]>>> findGroupsByColumns(List<Float[]> data) {
+    private static List<Map<Float, Group>> findGroupsByColumns(List<Float[]> data) {
         int maxLength = findMaxLength(data);
 
-        List<Map<Float, List<Float[]>>> result = new ArrayList<>();
+        List<Map<Float, Group>> result = new ArrayList<>();
 
         for (int i = 0; i < maxLength; i++) {
             int finalI = i;
-            System.out.println("Начало поиска для " + i + " " + System.currentTimeMillis());
             Float[] currentElements = data.stream()
                     .map(it -> Arrays.stream(it)
                             .skip(finalI)
@@ -57,7 +105,6 @@ public class GroupDivider {
                             .orElse(0F)
                     )
                     .toArray(Float[]::new);
-            System.out.println("Конец поиска для " + i + " " + System.currentTimeMillis());
             Set<Float> notHaveCopies = new HashSet<>();
             Set<Float> hasCopies = new HashSet<>();
             for (Float l : currentElements) {
@@ -66,9 +113,7 @@ public class GroupDivider {
                 }
             }
 
-            System.out.println("Конец поиска копий для " + i + " " + System.currentTimeMillis());
-
-            Map<Float, List<Float[]>> mapWithMatches = data.stream()
+            Map<Float, Group> mapWithMatches = data.stream()
                     .filter(s -> Arrays.stream(s)
                             .skip(finalI)
                             .limit(1)
@@ -78,7 +123,7 @@ public class GroupDivider {
                                     .skip(finalI)
                                     .limit(1)
                                     .findFirst().orElse(0F),
-                            Collectors.toList()
+                            Collectors.collectingAndThen(Collectors.toList(), Group::new)
                     ));
 
             if (!mapWithMatches.isEmpty()) {

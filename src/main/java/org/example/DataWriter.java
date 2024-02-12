@@ -10,7 +10,7 @@ public class DataWriter {
 
     private static final String FOLDER_PATH = "src/main/resources/";
 
-    public static void writeData(List<List<Long[]>> groups) {
+    public static void writeData(List<List<Float[]>> groups) {
 
         String newFileName = FOLDER_PATH + "result.txt";
         Path outputPath = Path.of(newFileName);
@@ -28,7 +28,7 @@ public class DataWriter {
 
             int countGroups = 1;
 
-            for (List<Long[]> group : groups) {
+            for (List<Float[]> group : groups) {
                 writer.write(getStringFromList(group, countGroups++));
             }
 
@@ -37,12 +37,12 @@ public class DataWriter {
         }
     }
 
-    private static String getStringFromList(List<Long[]> group, int number) {
+    private static String getStringFromList(List<Float[]> group, int number) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("Группа ").append(number).append("\n");
 
-        for (Long[] line : group) {
+        for (Float[] line : group) {
             for (int i = 0; i < line.length - 1; i++) {
                 sb.append("\"").append(line[i] == 0 ? "" : line[i]).append("\";");
             }

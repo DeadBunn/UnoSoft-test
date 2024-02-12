@@ -11,19 +11,19 @@ public class DataReader {
 
     private static final String FOLDER_PATH = "src/main/resources/";
 
-    public static List<Long[]> readData(String fileName) {
+    public static List<Float[]> readData(String fileName) {
         String filePath = FOLDER_PATH + fileName;
-        List<Long[]> data;
+        List<Float[]> data;
 
         try (Stream<String> rows = Files.lines(Paths.get(filePath))) {
             data = rows
                     .distinct()
-                    .filter(it -> it.matches("(\"[0-9]*\")(;\"[0-9]*\")*"))
+                    //.filter(it -> it.matches("(\"[0-9.]*\")(;\"[0-9.]*\")*"))
                     .map(it -> Arrays.stream(it.split(";"))
-                            .map(number -> number.equals("\"\"")
+                            .map(number -> number.equals("")
                                     ? 0L
-                                    : Long.valueOf(number.replaceAll("\"", "")))
-                            .toArray(Long[]::new))
+                                    : Float.valueOf(number.replaceAll("\"", "")))
+                            .toArray(Float[]::new))
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);

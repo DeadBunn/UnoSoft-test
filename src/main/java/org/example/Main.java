@@ -7,8 +7,8 @@ public class Main {
 
         Long start = System.currentTimeMillis();
 
-        List<Float[]> data = DataReader.readData(args[0]);
-        List<List<Float[]>> groups = GroupDivider.divide(data);
+        List<Double[]> data = DataReader.readData(args[0]);
+        List<List<Double[]>> groups = GroupDivider.divide(data);
         DataWriter.writeData(groups);
 
         Long finish = System.currentTimeMillis();

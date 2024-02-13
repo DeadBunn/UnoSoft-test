@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 public class GroupDivider {
 
     private static class Group {
-        private final List<Float[]> group;
+        private final List<Double[]> group;
 
         private final List<Group> linkedGroups = new ArrayList<>();
 
-        public Group(List<Float[]> group) {
+        public Group(List<Double[]> group) {
             this.group = group;
         }
 
@@ -41,17 +41,17 @@ public class GroupDivider {
         }
     }
 
-    public static List<List<Float[]>> divide(List<Float[]> data) {
+    public static List<List<Double[]>> divide(List<Double[]> data) {
 
-        List<Map<Float, Group>> groupsByColumns = findGroupsByColumns(data);
+        List<Map<Double, Group>> groupsByColumns = findGroupsByColumns(data);
 
         for (int i = 0; i < groupsByColumns.size() - 1; i++) {
-            Map<Float, Group> headGroups = groupsByColumns.get(i);
+            Map<Double, Group> headGroups = groupsByColumns.get(i);
             for (int j = i + 1; j < groupsByColumns.size(); j++) {
-                Map<Float, Group> checkedGroups = groupsByColumns.get(j);
+                Map<Double, Group> checkedGroups = groupsByColumns.get(j);
 
-                for (Map.Entry<Float, Group> currentGroup : headGroups.entrySet()) {
-                    for (Float[] line : currentGroup.getValue().group) {
+                for (Map.Entry<Double, Group> currentGroup : headGroups.entrySet()) {
+                    for (Double[] line : currentGroup.getValue().group) {
 
                         if (!(line.length > j)) {
                             continue;
@@ -84,32 +84,32 @@ public class GroupDivider {
                 .toList();
     }
 
-    private static int findMaxLength(List<Float[]> data) {
+    private static int findMaxLength(List<Double[]> data) {
         return data.stream()
                 .max(Comparator.comparingInt(it -> it.length))
-                .orElse(new Float[0])
+                .orElse(new Double[0])
                 .length;
     }
 
-    private static List<Map<Float, Group>> findGroupsByColumns(List<Float[]> data) {
+    private static List<Map<Double, Group>> findGroupsByColumns(List<Double[]> data) {
         int maxLength = findMaxLength(data);
 
-        List<Map<Float, Group>> result = new ArrayList<>();
+        List<Map<Double, Group>> result = new ArrayList<>();
 
         for (int i = 0; i < maxLength; i++) {
 
             int finalInt = i;
 
-            Map<Float, List<Float[]>> resultMap = new HashMap<>();
+            Map<Double, List<Double[]>> resultMap = new HashMap<>();
 
-            data.forEach(FloatArray -> {
-                if (FloatArray.length > finalInt && FloatArray[finalInt] != 0) {
-                    resultMap.putIfAbsent(FloatArray[finalInt], new ArrayList<>());
-                    resultMap.get(FloatArray[finalInt]).add(FloatArray);
+            data.forEach(DoubleArray -> {
+                if (DoubleArray.length > finalInt && DoubleArray[finalInt] != 0) {
+                    resultMap.putIfAbsent(DoubleArray[finalInt], new ArrayList<>());
+                    resultMap.get(DoubleArray[finalInt]).add(DoubleArray);
                 }
             });
 
-            Map<Float, Group> transformedMap = resultMap.entrySet().stream()
+            Map<Double, Group> transformedMap = resultMap.entrySet().stream()
                     .filter(it -> it.getValue().size() >= 2)
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> new Group(entry.getValue())));
 
